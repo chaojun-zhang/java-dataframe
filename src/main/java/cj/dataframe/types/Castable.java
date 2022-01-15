@@ -143,7 +143,7 @@ public final class Castable {
     private static final Function<Object, Object> anyToString = Object::toString;
 
     private static final Map<DataType, Map<DataType, Function<Object, Object>>> toString = Map.of(STRING, Map.of(
-            BYTE, anyToString,
+
             SHORT, anyToString,
             INT, anyToString,
             LONG, anyToString,
@@ -153,23 +153,13 @@ public final class Castable {
 
     private static final Map<DataType, Map<DataType, Function<Object, Object>>> CAST_BUILDER = Map.of(
             BOOLEAN, Map.of(
-                    BYTE, anyToBoolean,
                     SHORT, anyToBoolean,
                     INT, anyToBoolean,
                     LONG, anyToBoolean,
                     FLOAT, anyToBoolean,
                     DOUBLE, anyToBoolean,
                     STRING, anyToBoolean
-            ), BYTE, Map.of(
-                    SHORT, anyToByte,
-                    INT, anyToByte,
-                    LONG, anyToByte,
-                    FLOAT, anyToByte,
-                    DOUBLE, anyToByte,
-                    STRING, anyToByte,
-                    BOOLEAN, anyToByte
-            ), SHORT, Map.of(
-                    BYTE, anyToShort,
+            ),  SHORT, Map.of(
                     INT, anyToShort,
                     LONG, anyToShort,
                     FLOAT, anyToShort,
@@ -177,7 +167,6 @@ public final class Castable {
                     STRING, anyToShort,
                     BOOLEAN, anyToShort
             ), INT, Map.of(
-                    BYTE, anyToInt,
                     SHORT, anyToInt,
                     LONG, anyToInt,
                     FLOAT, anyToInt,
@@ -185,7 +174,6 @@ public final class Castable {
                     STRING, anyToInt,
                     BOOLEAN, anyToInt
             ), LONG, Map.of(
-                    BYTE, anyToLong,
                     SHORT, anyToLong,
                     INT, anyToLong,
                     FLOAT, anyToLong,
@@ -193,7 +181,6 @@ public final class Castable {
                     STRING, anyToLong,
                     BOOLEAN, anyToLong
             ), FLOAT, Map.of(
-                    BYTE, anyToFloat,
                     SHORT, anyToFloat,
                     INT, anyToFloat,
                     LONG, anyToFloat,
@@ -201,7 +188,6 @@ public final class Castable {
                     STRING, anyToFloat,
                     BOOLEAN, anyToFloat
             ), DOUBLE, Map.of(
-                    BYTE, anyToDouble,
                     SHORT, anyToDouble,
                     INT, anyToDouble,
                     LONG, anyToDouble,
