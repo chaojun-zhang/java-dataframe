@@ -1,0 +1,743 @@
+uids:
+  distribution:
+    -
+      storage: acc_req
+      fields: [upflow, downflow, reqcount]
+  pili:
+    -
+      storage: upflow
+      fields: [flow]
+    -
+      storage: downflow
+      fields: [flow]
+    -
+      storage: codec
+      fields: [duration]
+    -
+      storage: nrop
+      fields: [count]
+    -
+      storage: rtc
+      fields: [concurrent, duration]
+    -
+      storage: vdnrtc
+      fields: [duration, flow]
+    -
+      storage: rtc_forward
+      fields: [duration, flow]
+    -
+      storage: vdnrtc_merge
+      fields: [duration, flow]
+    -
+      storage: caster
+      fields: [upflow, downflow, duration]
+    -
+      storage: pub
+      fields: [duration, count]
+    -
+      storage: idc_live
+      fields: [flow]
+    -
+      storage: qvsStreamCount
+      fields: [count]
+    -
+      storage: imbutler
+    -
+      storage: imvalueadded
+    -
+      storage: rtc_chatboard
+
+datasource:
+  mysql1:
+    type: jdbc
+    url: xxxx
+  mongo1:
+    type:
+    url
+storage:
+  upflow:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m3.pili.off_up_5min
+        compact: true
+      hour:
+        mode: mongo.m3.pili.off_up_5min
+        compact: true
+      day:
+        mode: mongo.m3.pili.off_up_day
+      month:
+        mode: mongo.m3.pili.off_up_day
+    new:
+      mode: mongo.m3.pili.rt_up
+
+  downflow:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m3.pili.off_down_5min
+        compact: true
+      hour:
+        mode: mongo.m3.pili.off_down_5min
+        compact: true
+      day:
+        mode: mongo.m3.pili.off_down_day
+      month:
+        mode: mongo.m3.pili.off_down_day
+    new:
+      mode: mongo.m3.pili.rt_down
+
+  stream_down_flow:
+    mode: druid
+    datasource: druid.d1.stream_charge_down_flow
+    args:
+      method: play,custom forward
+
+  stream_up_flow:
+    mode: druid
+    datasource: druid.d1.stream_charge_down_flow
+    args:
+      method: publish
+
+  stream_op_flow:
+    mode: druid
+    datasource: druid.d1.stream_charge_down_flow
+
+  stream_charge_flow:
+    mode: druid
+    datasource: druid.d1.stream_charge_down_flow
+    args:
+      method: play,custom forward,cdn forward play
+
+  # 转码
+  codec:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m3.pili.off_codecd_5min
+        compact: true
+      hour:
+        mode: mongo.m3.pili.off_codecd_5min
+        compact: true
+      day:
+        mode: mongo.m3.pili.off_codecd_day
+      month:
+        mode: mongo.m3.pili.off_codecd_day
+    new:
+      mode: mongo.m3.pili.rt_codecd
+
+  # 鉴黄
+  nrop:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m3.pili.off_nrop_5min
+        compact: true
+      hour:
+        mode: mongo.m3.pili.off_nrop_5min
+        compact: true
+      day:
+        mode: mongo.m3.pili.off_nrop_day
+      month:
+        mode: mongo.m3.pili.off_nrop_day
+    new:
+      mode: mongo.m3.pili.rt_nrop
+
+  # 连麦
+  rtc:
+    mode: granule
+    5min:
+      mode: mongo.m3.pili.off_rtc_5min
+      compact: true
+    hour:
+      mode: mongo.m3.pili.off_rtc_5min
+      compact: true
+    day:
+      mode: mongo.m3.pili.off_rtc_day
+    month:
+      mode: mongo.m3.pili.off_rtc_day
+
+  # 连麦-自研
+  vdnrtc:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m3.pili_rtc.rtc_off_5min
+        compact: true
+      hour:
+        mode: mongo.m3.pili_rtc.rtc_off_5min
+        compact: true
+      day:
+        mode: mongo.m3.pili_rtc.rtc_off_day
+      month:
+        mode: mongo.m3.pili_rtc.rtc_off_day
+    new:
+      mode: mongo.m3.pili_rtc.rtc_rt
+
+  # 连麦-转推
+  rtc_forward:
+    mode: granule
+    5min:
+      mode: mongo.m3.pili_rtc.rtc_forward_off_5min
+      compact: true
+    hour:
+      mode: mongo.m3.pili_rtc.rtc_forward_off_5min
+      compact: true
+    day:
+      mode: mongo.m3.pili_rtc.rtc_forward_off_day
+    month:
+      mode: mongo.m3.pili_rtc.rtc_forward_off_day
+
+  vdnrtc_player:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m3.pili_rtc.rtc_player_off_5min
+        compact: true
+      hour:
+        mode: mongo.m3.pili_rtc.rtc_player_off_5min
+        compact: true
+      day:
+        mode: mongo.m3.pili_rtc.rtc_player_off_day
+    new:
+      mode: mongo.m3.pili_rtc.rtc_player_rt
+
+  vdnrtc_room:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m1.pili_rtc.rtc_room_off_5min
+        compact: true
+      hour:
+        mode: mongo.m1.pili_rtc.rtc_room_off_5min
+        compact: true
+      day:
+        mode: mongo.m1.pili_rtc.rtc_room_off_day
+    new:
+      mode: mongo.m1.pili_rtc.rtc_room_rt
+
+  # 连麦合流
+  vdnrtc_merge:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m3.pili_rtc.rtc_merge_off_5min
+        compact: true
+      hour:
+        mode: mongo.m3.pili_rtc.rtc_merge_off_5min
+        compact: true
+      day:
+        mode: mongo.m3.pili_rtc.rtc_merge_off_day
+      month:
+        mode: mongo.m3.pili_rtc.rtc_merge_off_day
+    new:
+      mode: mongo.m3.pili_rtc.rtc_merge_rt
+
+
+  vdnflow:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m1.pili.vdn_idc_off_5min
+        compact: true
+      day:
+        mode: mongo.m1.pili.vdn_idc_off_day
+    new:
+      mode: mongo.m1.pili.vdn_idc_rt
+
+  qos_server_sdk_hub:
+    mode: mongo.m1.qosanalyzer.hub
+
+  qos_server_sdk_node:
+    mode: mongo.m1.qosanalyzer.node
+
+  qos_server_internal:
+    mode: mongo.m2.qbox_carrydog.internal
+
+  qos_sdk_sum:
+    mode: granule
+    5min:
+      mode: mongo.m1.pili_sdk.sum_rt_5min
+    day:
+      mode: mongo.m1.pili_sdk.sum_off_day
+
+  qos_server_node:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m2.pili_qos_server.node_fps_off_5min
+        compact: true
+      hour:
+        mode: mongo.m2.pili_qos_server.node_fps_off_5min
+        compact: true
+      day:
+        mode: mongo.m2.pili_qos_server.node_fps_off_day
+    new:
+      mode: mongo.m2.pili_qos_server.node_fps_rt_5min
+
+  qos_server_hub:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m2.pili_qos_server.hub_fps_off_5min
+        compact: true
+      hour:
+        mode: mongo.m2.pili_qos_server.hub_fps_off_5min
+        compact: true
+      day:
+        mode: mongo.m2.pili_qos_server.hub_fps_off_day
+    new:
+      mode: mongo.m2.pili_qos_server.hub_fps_rt_5min
+
+  qos_server_base:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m2.pili_qos_server.base_fps_off_5min
+        compact: true
+      hour:
+        mode: mongo.m2.pili_qos_server.base_fps_off_5min
+        compact: true
+      day:
+        mode: mongo.m2.pili_qos_server.base_fps_off_day
+    new:
+      mode: mongo.m2.pili_qos_server.base_fps_rt_5min
+
+  qos_server_forward:
+    mode: mongo.m2.pili_qos_server.forward_fps_off_5min
+
+  qos_server_inner:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m2.pili_qos_server.inner_fps_off_5min
+        compact: true
+      hour:
+        mode: mongo.m2.pili_qos_server.inner_fps_off_hour
+        compact: true
+      day:
+        mode: mongo.m2.pili_qos_server.inner_fps_off_day
+    new:
+      mode: mongo.m2.pili_qos_server.inner_fps_rt_5min
+
+  #vdn op data for user
+  up_op:
+    mode: granule
+    5min:
+      mode: mongo.m2.pili_op.up_op_off_5min
+      compact: true
+    hour:
+      mode: mongo.m2.pili_op.up_op_off_5min
+      compact: true
+    day:
+      mode: mongo.m2.pili_op.up_op_off_day
+
+  down_op:
+    mode: granule
+    5min:
+      mode: mongo.m2.pili_op.down_op_off_5min
+      compact: true
+    hour:
+      mode: mongo.m2.pili_op.down_op_off_5min
+      compact: true
+    day:
+      mode: mongo.m2.pili_op.down_op_off_day
+
+  #vdn op data for area
+  up_area_op:
+    mode: granule
+    5min:
+      mode: mongo.m2.pili_op.up_area_op_off_5min
+      compact: true
+    day:
+      mode: mongo.m2.pili_op.up_area_op_off_day
+  down_area_op:
+    mode: granule
+    5min:
+      mode: mongo.m2.pili_op.down_area_op_off_5min
+      compact: true
+    day:
+      mode: mongo.m2.pili_op.down_area_op_off_day
+
+  api_req:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m3.pili_api.api_req_off_5min
+        compact: true
+      hour:
+        mode: mongo.m3.pili_api.api_req_off_5min
+        compact: true
+      day:
+        mode: mongo.m3.pili_api.api_req_off_day
+    new:
+      mode: mongo.m3.pili_api.api_req_rt
+
+  acc_req:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m3.pili_api.api_req_off_5min
+        compact: true
+      hour:
+        mode: mongo.m3.pili_api.api_req_off_5min
+        compact: true
+      day:
+        mode: mongo.m3.pili_api.api_req_off_day
+    new:
+      mode: mongo.m3.pili_api.api_req_rt
+
+  acc_node_req:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m1.pili_api.api_node_off_5min
+        compact: true
+      hour:
+        mode: mongo.m1.pili_api.api_node_off_5min
+        compact: true
+      day:
+        mode: mongo.m1.pili_api.api_node_off_day
+    new:
+      mode: mongo.m1.pili_api.api_node_rt
+
+  acc_user_code:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m1.pili_api.api_user_code_off_5min
+        compact: true
+      hour:
+        mode: mongo.m1.pili_api.api_user_code_off_5min
+        compact: true
+      day:
+        mode: mongo.m1.pili_api.api_user_code_off_day
+    new:
+      mode: mongo.m1.pili_api.api_user_code_rt
+
+  acc_node_code:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m1.pili_api.api_node_code_off_5min
+        compact: true
+      hour:
+        mode: mongo.m1.pili_api.api_node_code_off_5min
+        compact: true
+      day:
+        mode: mongo.m1.pili_api.api_node_code_off_day
+    new:
+      mode: mongo.m1.pili_api.api_node_code_rt
+
+  acc_area_code:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m1.pili_api.api_area_code_off_5min
+        compact: true
+      hour:
+        mode: mongo.m1.pili_api.api_area_code_off_5min
+        compact: true
+      day:
+        mode: mongo.m1.pili_api.api_area_code_off_day
+    new:
+      mode: mongo.m1.pili_api.api_area_code_rt
+
+  acc_distribution_resptime:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m1.pili_api.api_distribution_resptime_off_5min
+        compact: true
+      day:
+        mode: mongo.m1.pili_api.api_distribution_resptime_off_day
+    new:
+      mode: mongo.m1.pili_api.api_distribution_resptime_rt
+
+  acc_domain_resptime:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m1.pili_api.api_domain_resptime_off_5min
+        compact: true
+      day:
+        mode: mongo.m1.pili_api.api_domain_resptime_off_day
+    new:
+      mode: mongo.m1.pili_api.api_domain_resptime_rt
+
+  acc_idc_resptime:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m1.pili_api.api_idc_resptime_off_5min
+        compact: true
+      day:
+        mode: mongo.m1.pili_api.api_idc_resptime_off_day
+    new:
+      mode: mongo.m1.pili_api.api_idc_resptime_rt
+
+  acc_node_resptime:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m1.pili_api.api_node_resptime_off_5min
+        compact: true
+      day:
+        mode: mongo.m1.pili_api.api_node_resptime_off_day
+    new:
+      mode: mongo.m1.pili_api.api_node_resptime_rt
+
+  acc_area_resptime:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m1.pili_api.api_area_resptime_off_5min
+        compact: true
+      day:
+        mode: mongo.m1.pili_api.api_area_resptime_off_day
+    new:
+      mode: mongo.m1.pili_api.api_area_resptime_rt
+
+  acc_isp_resptime:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m1.pili_api.api_isp_resptime_off_5min
+        compact: true
+      day:
+        mode: mongo.m1.pili_api.api_isp_resptime_off_day
+    new:
+      mode: mongo.m1.pili_api.api_isp_resptime_rt
+
+  acc_province_resptime:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m1.pili_api.api_province_resptime_off_5min
+        compact: true
+      day:
+        mode: mongo.m1.pili_api.api_province_resptime_off_day
+    new:
+      mode: mongo.m1.pili_api.api_province_resptime_rt
+
+  acc_node_inner_req:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m1.pili_api.api_node_inner_off_5min
+        compact: true
+      hour:
+        mode: mongo.m1.pili_api.api_node_inner_off_5min
+        compact: true
+      day:
+        mode: mongo.m1.pili_api.api_node_inner_off_day
+    new:
+      mode: mongo.m1.pili_api.api_node_inner_rt
+
+  # 导播台计费接口
+  caster:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m3.pili_caster.caster_off_5min
+        compact: true
+      hour:
+        mode: mongo.m3.pili_caster.caster_off_5min
+        compact: true
+      day:
+        mode: mongo.m3.pili_caster.caster_off_day
+    new:
+      mode: mongo.m3.pili_caster.caster_rt
+
+  alert:
+    mode: mongo.m2.pili-alertcenter.stat_alert
+
+  # 连麦质量接口
+  rtc_qos_server_node:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m2.rtc_qos_server.node_off_5min
+        compact: true
+      hour:
+        mode: mongo.m2.rtc_qos_server.node_off_hour
+        compact: true
+      day:
+        mode: mongo.m2.rtc_qos_server.node_off_day
+    new:
+      mode: mongo.m2.rtc_qos_server.node_rt_5min
+
+  rtc_qos_server_app:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m2.rtc_qos_server.app_off_5min
+        compact: true
+      hour:
+        mode: mongo.m2.rtc_qos_server.app_off_hour
+        compact: true
+      day:
+        mode: mongo.m2.rtc_qos_server.app_off_day
+    new:
+      mode: mongo.m2.rtc_qos_server.app_rt_5min
+
+  rtc_qos_server_base:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m2.rtc_qos_server.base_off_5min
+        compact: true
+      hour:
+        mode: mongo.m2.rtc_qos_server.base_off_hour
+        compact: true
+      day:
+        mode: mongo.m2.rtc_qos_server.base_off_day
+    new:
+      mode: mongo.m2.rtc_qos_server.base_rt_5min
+
+  pub:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m3.pili.off_pub_5min
+        compact: true
+      hour:
+        mode: mongo.m3.pili.off_pub_5min
+        compact: true
+      day:
+        mode: mongo.m3.pili.off_pub_day
+      month:
+        mode: mongo.m3.pili.off_pub_day
+    new:
+      mode: mongo.m3.pili.rt_pub
+
+  qvsStreamCount:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m3.pili.off_qvs_stream_count_5min
+        compact: true
+      hour:
+        mode: mongo.m3.pili.off_qvs_stream_count_5min
+        compact: true
+      day:
+        mode: mongo.m3.pili.off_qvs_stream_count_day
+      month:
+        mode: mongo.m3.pili.off_qvs_stream_count_day
+    new:
+      mode: mongo.m3.pili.rt_qvs
+
+  idc_live:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m3.pili.off_idc_rt_5min
+        compact: true
+      hour:
+        mode: mongo.m3.pili.off_idc_rt_5min
+        compact: true
+      day:
+        mode: mongo.m3.pili.off_idc_rt_day
+      month:
+        mode: mongo.m3.pili.off_idc_rt_day
+    new:
+      mode: mongo.m3.pili.idc_rt_up
+
+  vdn_dnode_charge:
+    mode: timeline
+    old:
+      mode: granule
+      5min:
+        mode: mongo.m3.pili.off_idc_rt_5min
+        compact: true
+      hour:
+        mode: mongo.m3.pili.off_idc_rt_5min
+        compact: true
+      day:
+        mode: mongo.m3.pili.off_idc_rt_day
+      month:
+        mode: mongo.m3.pili.off_idc_rt_day
+    new:
+      mode: mongo.m3.pili.dnode_charge_up_and_down_5min
+
+  rtc_charge_mgtv:
+     mode: granule
+     5min:
+       mode: mongo.m1.pili_rtc.rtc_mg_off_5min
+       compact: true
+     hour:
+       mode: mongo.m1.pili_rtc.rtc_mg_off_hour
+       compact: true
+     day:
+       mode: mongo.m1.pili_rtc.rtc_mg_off_day
+
+  rtc_merge_mgtv:
+    mode: granule
+    5min:
+      mode: mongo.m1.pili_rtc.rtc_merge_mg_off_5min
+      compact: true
+    hour:
+      mode: mongo.m1.pili_rtc.rtc_merge_mg_off_hour
+      compact: true
+    day:
+      mode: mongo.m1.pili_rtc.rtc_merge_mg_off_day
+
+  rtc_forward_mgtv:
+     mode: granule
+     5min:
+       mode: mongo.m1.pili_rtc.rtc_forward_mg_off_5min
+       compact: true
+     hour:
+       mode: mongo.m1.pili_rtc.rtc_forward_mg_off_hour
+       compact: true
+     day:
+       mode: mongo.m1.pili_rtc.rtc_forward_mg_off_day
+
+  imbutler:
+     mode: granule
+     day:
+       mode: mongo.m4.imbutler.usageamount_day
+
+  imvalueadded:
+     mode: granule
+     day:
+       mode: mongo.m4.imbutler.valueadd_amount_day
+
+  rtc_chatboard:
+     mode: granule
+     day:
+       mode: mongo.m2.rtc_chatboard.chatboard_stat
