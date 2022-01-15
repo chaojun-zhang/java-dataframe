@@ -1,6 +1,5 @@
 package cj.dataframe.tree;
 
-import io.vavr.PartialFunction;
 import io.vavr.collection.Array;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
@@ -27,17 +26,17 @@ public interface TreeNode<Base extends TreeNode<Base>> extends Product {
         return this.equals(that);
     }
 
-    default Base transformDown(Rule<Base> rule) {
-        Base newSelf = rule.apply((Base) this);
+    default Base transformDown(PartialFunction<Base,Base> rule) {
+        Base newSelf = rule.applyOrElse((Base) this,it->it);
         return newSelf.transformChildren(rule, TreeNode::transformDown);
     }
 
-    default Base transformUp(Rule<Base> rule) {
+    default Base transformUp(PartialFunction<Base,Base> rule) {
         Base newSelf = this.transformChildren(rule, TreeNode::transformUp);
-        return rule.apply((Base) newSelf);
+        return rule.applyOrElse(newSelf, it -> it);
     }
 
-    default Base transformChildren(Rule<Base> rule, BiFunction<Base, Rule<Base>, Base> next) {
+    default Base transformChildren(PartialFunction<Base,Base> rule, BiFunction<Base, PartialFunction<Base,Base>, Base> next) {
         Seq<Base> newChildren = children().map(it -> next.apply(it, rule));
         boolean anyChildChanged = newChildren.zip(children()).map(it -> it._1.fastEquals(it._2)).contains(false);
         if (anyChildChanged) {
@@ -99,7 +98,7 @@ public interface TreeNode<Base extends TreeNode<Base>> extends Product {
 
     default <T> Seq<T> collectDown(PartialFunction<Base, T> function) {
         java.util.List<T> buffer = new ArrayList<>();
-        this.transformDown(new Rule<>() {
+        this.transformDown(new PartialFunction<>() {
             @Override
             public Base apply(Base base) {
                 T it = function.apply(base);
@@ -117,7 +116,7 @@ public interface TreeNode<Base extends TreeNode<Base>> extends Product {
 
     default <T> Seq<T> collectUp(PartialFunction<Base, T> function) {
         java.util.List<T> buffer = new ArrayList<>();
-        this.transformUp(new Rule<>() {
+        this.transformUp(new PartialFunction<>() {
             @Override
             public Base apply(Base base) {
                 T it = function.apply(base);
